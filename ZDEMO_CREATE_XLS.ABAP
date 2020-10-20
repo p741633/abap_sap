@@ -13,9 +13,11 @@ TYPES : BEGIN OF ty_vrsx,
         END OF ty_vrsx.
 * To hold selection data
 DATA: it_vrsx TYPE STANDARD TABLE OF ty_vrsx WITH HEADER LINE.
+* To hold converted text data
+*DATA: i_text(4096) TYPE c OCCURS 0.
 
 * Selection Screen
-PARAMETERS: p_file LIKE rlgrap-filename DEFAULT 'D:/test.xlsx'.
+PARAMETERS: p_file LIKE rlgrap-filename DEFAULT 'test.xlsx'.
 PARAMETERS: p_relid LIKE vrsx-relid DEFAULT 'CU'.
 
 * Select data into an ITAB based on the selection Criteria
@@ -28,13 +30,15 @@ SELECT relid, objsubtype, objname, versno
 * Process further only if found some data
 IF NOT it_vrsx[] IS INITIAL.
 * Convert data in internal table to a delimited text data
-* If you want to convert the data into required types use EXCEL_OLE_STANDARD_DAT.
   CALL FUNCTION 'SAP_CONVERT_TO_XLS_FORMAT'
     EXPORTING
-*     i_field_seperator = 'X'
+      i_field_seperator = 'X'
+      i_line_header     = 'X'
       i_filename        = p_file
     TABLES
       i_tab_sap_data    = it_vrsx
+*    CHANGING
+*     i_tab_converted_data = i_text
     EXCEPTIONS
       conversion_failed = 1
       OTHERS            = 2.
@@ -43,7 +47,7 @@ IF NOT it_vrsx[] IS INITIAL.
     WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
 *    WRITE: / 'Program failed to Convert data.'.
   ELSE.
-
+    WRITE: 'Download completed.'.
 * Download convert data to Presentation Server
 *    CALL FUNCTION 'DOWNLOAD'
 *      TABLES
