@@ -5,9 +5,9 @@
 *&---------------------------------------------------------------------*
 REPORT zdemo_readtext_create_xls.
 
-DATA: h_xtab TYPE string.
-DATA: d_itab TYPE TABLE OF string.
-DATA: d_xtab TYPE string.
+DATA: it_lines TYPE STANDARD TABLE OF tline,
+      wa_lines TYPE tline.
+DATA: full_text TYPE string.
 
 DATA:
   BEGIN OF fs_stxl,
@@ -37,16 +37,31 @@ TYPES: BEGIN OF ty_stxl,
        END OF ty_stxl.
 DATA: wa_stxl TYPE ty_stxl.
 
-DATA: l_index TYPE sy-tabix.
-DATA: it_lines TYPE STANDARD TABLE OF tline,
-      wa_lines TYPE tline.
-DATA: full_text TYPE string.
-" DATA : bar_to_space(1) TYPE c VALUE '|'.
+DATA:
+  it_stxl LIKE
+     TABLE OF
+           fs_stxl WITH HEADER LINE.
+
+TYPES: BEGIN OF ty_stxl_str,
+         mandt    TYPE string,
+         relid    TYPE string,
+         tdobject TYPE string,
+         tdname   TYPE string,
+         tdid     TYPE string,
+         tdspras  TYPE string,
+         srtf2    TYPE string,
+         clustr   TYPE string,
+         longtext TYPE string,
+       END OF ty_stxl_str.
+DATA: it_stxl_str TYPE STANDARD TABLE OF ty_stxl_str,
+      wa_stxl_str TYPE ty_stxl_str.
+
+DATA: stxl_lines TYPE i,
+      gd_percent TYPE i.
 
 DATA : BEGIN OF it_heading OCCURS 0,
          text(15),
        END OF it_heading.
-
 it_heading-text = 'mandt'.
 APPEND it_heading.
 it_heading-text = 'relid'.
@@ -64,41 +79,18 @@ APPEND it_heading.
 it_heading-text = 'clustr'.
 APPEND it_heading.
 it_heading-text = 'clustd'.
-
 APPEND it_heading.
-
-DATA:
-  it_stxl LIKE
-     TABLE OF
-           fs_stxl WITH HEADER LINE.
-
-TYPES: BEGIN OF ty_stxl_final,
-         mandt    TYPE string,
-         relid    TYPE string,
-         tdobject TYPE string,
-         tdname   TYPE string,
-         tdid     TYPE string,
-         tdspras  TYPE string,
-         srtf2    TYPE string,
-         clustr   TYPE string,
-         longtext TYPE string,
-       END OF ty_stxl_final.
-DATA: it_stxl_final TYPE STANDARD TABLE OF ty_stxl_final,
-      wa_stxl_final TYPE ty_stxl_final.
-
-DATA: stxl_lines TYPE i,
-      gd_percent TYPE i.
-
-*SELECT-OPTIONS: mats FOR mara-matnr OBLIGATORY.
-*SELECT-OPTIONS:
-*  s_versno FOR fs_stxl-versno.
-*PARAMETERS: p_relid LIKE stxl-relid DEFAULT 'CU' OBLIGATORY.
 
 TABLES stxh.
 SELECT-OPTIONS s_object FOR stxh-tdobject.
 SELECT-OPTIONS s_name   FOR stxh-tdname.
 SELECT-OPTIONS s_id     FOR stxh-tdid.
 SELECT-OPTIONS s_langu  FOR stxh-tdspras.
+
+*SELECT-OPTIONS: mats FOR mara-matnr OBLIGATORY.
+*SELECT-OPTIONS:
+*  s_versno FOR fs_stxl-versno.
+*PARAMETERS: p_relid LIKE stxl-relid DEFAULT 'CU' OBLIGATORY.
 
 *INITIALIZATION.
 *  s_versno-low = '1'.
@@ -129,30 +121,21 @@ START-OF-SELECTION.
     ON h~tdobject = l~tdobject
        AND h~tdname   = l~tdname
        AND h~tdid     = l~tdid
-    UP TO 100 ROWS
-    WHERE l~relid    = 'TX' "standard text
-      AND h~tdobject IN s_object
-      AND h~tdname   IN s_name
-      AND h~tdid     IN s_id
-      AND l~tdspras  IN s_langu.
-       "AND h~tdobject = 'EKPO'
-       "AND h~tdname   = '450001216400010'
-       "AND h~tdid     = 'F01'
-       "AND l~tdspras  = sy-langu.
-
-*   WHERE versno IN s_versno
-*    AND relid EQ p_relid.
+    UP TO 5000 ROWS
+    WHERE l~relid    = 'TX' " standard text
+      AND h~tdobject IN s_object " 'EKPO'
+      AND h~tdname   IN s_name " '450001216400010'
+      AND h~tdid     IN s_id " 'F01'
+      AND l~tdspras  IN s_langu. " sy-langu.
 
   IF NOT it_stxl[] IS INITIAL.
     stxl_lines = sy-dbcnt.
     CLEAR: gd_percent.
-    PERFORM progress_bar USING 'Retrieving data...'(001)
-                                   sy-tabix
-                                   stxl_lines.
 
     LOOP AT it_stxl INTO wa_stxl.
-
-      l_index = sy-tabix.
+      PERFORM progress_bar USING 'Retrieving data...'(001)
+                                   sy-tabix
+                                   stxl_lines.
 
       CALL FUNCTION 'READ_TEXT'
         EXPORTING
@@ -176,51 +159,21 @@ START-OF-SELECTION.
       CLEAR full_text.
 
       LOOP AT it_lines INTO wa_lines.
-
-        " IF sy-tabix = 1.
-        " CONCATENATE full_text wa_lines-tdline INTO full_text.
-        " ELSEIF sy-tabix > 1.
-        " CONCATENATE full_text bar_to_space wa_lines-tdline INTO full_text.
-        " ENDIF.
-
         CONCATENATE full_text wa_lines-tdline INTO full_text SEPARATED BY space.
-
       ENDLOOP.
 
-      " REPLACE '|' WITH ' - ' INTO full_text.
-
-      " WRITE: full_text.
-
-      " REPLACE ALL OCCURRENCES OF REGEX '[^[:print:]]' IN wa_stxl-tdname WITH ` `.
-
-
       CONDENSE full_text.
-      " SHIFT full_text RIGHT DELETING TRAILING cl_abap_char_utilities=>horizontal_tab.
 
-      " REPLACE ALL OCCURRENCES OF cl_abap_char_utilities=>cr_lf(1)
-      " IN full_text
-      " WITH space.
-
-      " READ TABLE it_lines INTO wa_lines INDEX 1.
-      " WRITE: wa_stxl-tdname, ';', full_text.
-
-      " INSERT wa_stxl INTO TABLE it_stxl_final.
-
-      wa_stxl_final-mandt = wa_stxl-mandt.
-      wa_stxl_final-relid = wa_stxl-relid.
-      wa_stxl_final-tdobject = wa_stxl-tdobject.
-      wa_stxl_final-tdname = wa_stxl-tdname.
-      wa_stxl_final-tdid = wa_stxl-tdid.
-      wa_stxl_final-tdspras = wa_stxl-tdspras.
-      wa_stxl_final-srtf2 = wa_stxl-srtf2.
-      wa_stxl_final-clustr = wa_stxl-clustr.
-      wa_stxl_final-longtext = full_text.
-      APPEND wa_stxl_final TO it_stxl_final.
-
-      " CONDENSE wa_stxl_final-tdname.
-
-      " WRITE: wa_stxl_final-tdname, ';', wa_stxl_final-longtext.
-
+      wa_stxl_str-mandt = wa_stxl-mandt.
+      wa_stxl_str-relid = wa_stxl-relid.
+      wa_stxl_str-tdobject = wa_stxl-tdobject.
+      wa_stxl_str-tdname = wa_stxl-tdname.
+      wa_stxl_str-tdid = wa_stxl-tdid.
+      wa_stxl_str-tdspras = wa_stxl-tdspras.
+      wa_stxl_str-srtf2 = wa_stxl-srtf2.
+      wa_stxl_str-clustr = wa_stxl-clustr.
+      wa_stxl_str-longtext = full_text.
+      APPEND wa_stxl_str TO it_stxl_str.
     ENDLOOP.
 
     CALL FUNCTION 'TH_REDISPATCH'
@@ -264,7 +217,7 @@ START-OF-SELECTION.
         filetype                = 'ASC'
         write_field_separator   = 'X'
       TABLES
-        data_tab                = it_stxl_final
+        data_tab                = it_stxl_str
         fieldnames              = it_heading[]
       EXCEPTIONS
         file_write_error        = 1
