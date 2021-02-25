@@ -1,4 +1,4 @@
-# พื้นฐาน SAP ABAP
+# พื้นฐาน SAP ABAP จาก https://www.tutorialspoint.com/sap_abap/
 
 ## การใช้งาน ABAP Editor
 
@@ -8,3 +8,5 @@
 4. กดปุ่ม "CREATE" จะขึ้น popup ABAP: PROGRAM ATTRIBUTES กำหนดรายละเอียดลงในช่อง Title
 5. เลือก Type เป็น Executable Program
 6. กดปุ่ม Save
+
+- Basic Syntax
