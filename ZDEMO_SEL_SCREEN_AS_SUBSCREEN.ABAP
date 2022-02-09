@@ -1,3 +1,8 @@
+*&---------------------------------------------------------------------*
+*& Report ZDEMO_SEL_LOOP_TABLE
+*&---------------------------------------------------------------------*
+*& DESCRIPTION: Selection Screen as Subscreen
+*&---------------------------------------------------------------------*
 REPORT zdemo_sel_screen_as_subscreen.
 
 *PARAMETERS A AS CHECKBOX.

@@ -1,7 +1,7 @@
 *&---------------------------------------------------------------------*
 *& Report ZDEMO_PROGRESS_INDICATOR
 *&---------------------------------------------------------------------*
-*& DESCRIPTION: Reset runtime value to stop timeout
+*& DESCRIPTION: Select and loop with progress indicator
 *&---------------------------------------------------------------------*
 REPORT zdemo_progress_indicator.
 

@@ -1,7 +1,7 @@
 *&---------------------------------------------------------------------*
 *& Report ZDEMO_READTEXT_CREATE_XLSX
 *&---------------------------------------------------------------------*
-*&
+*& DESCRIPTION: Create xlsx on the local system with readtext function
 *&---------------------------------------------------------------------*
 REPORT zdemo_readtext_create_xlsx.
 

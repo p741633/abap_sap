@@ -1,7 +1,7 @@
 *&---------------------------------------------------------------------*
 *& Report ZDEMO_CREATE_TXT_HEADER
 *&---------------------------------------------------------------------*
-*&
+*& DESCRIPTION: Create file on the local system with header (gui_download)
 *&---------------------------------------------------------------------*
 REPORT zdemo_create_txt_header.
 
