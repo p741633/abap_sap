@@ -9,4 +9,4 @@
 
 # SAP ABAP Tutorial จาก https://www.tutorialspoint.com/sap_abap/
 
-- [link](tutorials/basic-syntax.md#basic-syntax)
+- [Basic Syntax](tutorials/basic-syntax.md#basic-syntax)
